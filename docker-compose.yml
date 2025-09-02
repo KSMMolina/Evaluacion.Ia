@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: api-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Your_p@ssw0rd!
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "Your_p@ssw0rd!", "-Q", "SELECT 1"]
+      interval: 10s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Api_test_ia.Presentation/Dockerfile
+    container_name: api-net8
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__SqlServer: "Server=sql;Database=ApiPruebaIa;User Id=sa;Password=Your_p@ssw0rd!;TrustServerCertificate=True"
+    ports:
+      - "7133:8080"
+    depends_on:
+      - sql
